@@ -14,6 +14,8 @@
 import numpy as np
 import time
 import sys
+import rospy
+from std_msgs.msg import Int32MultiArray
 
 global motor_speed_limit
 motor_speed_limit = 300
@@ -129,10 +131,16 @@ def generateCmd( para ):
 
 	return cmd
 def pubCmd( cmd ):
-
+	
+	cmdpub = rospy.Publisher('JetToStm32', Int32MultiArray, queue_size=10)
+	
 	if( cmd[0] == -1 and cmd[1] == -1 ):
-		# pub ( 0 , 0, 0, 0, 0, 0 )
+		cmd = np.array( [ 0, 0, 0, 0, 0, 0 ] )
 		sys.exit( " Stop !! " )
+
+	pubdata = Int32MultiArray(data=cmd)
+	cmdpub.publish( pubdata )
+
 	return
 
 if __name__ == '__main__':
