@@ -36,13 +36,14 @@ import sys
 import numpy as np
 import time
 import copy
+import os
 
+os.environ["SDL_VIDEODRIVER"] = "dummy"
 pygame.init()
 pygame.joystick.init()
 
 controller = pygame.joystick.Joystick(0)
 controller.init()
-
 # Three types of controls: axis, button, and hat
 axis = {}
 button = {}
@@ -94,7 +95,8 @@ def updateParaFromController( para ):
 
 	# Get events
 	for event in pygame.event.get():
-		if event.type == pygame.JOYAXISMOTION:
+	    
+                if event.type == pygame.JOYAXISMOTION:
 
 		    	axis[event.axis] = round(event.value,3)
 
