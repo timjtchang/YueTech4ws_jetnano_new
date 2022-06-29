@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+    <node name="lane_track_node" pkg="lane_track" type="lane_track_on_jetnano.py" output="screen"/>
+    <node name="lane_save_hsv_node" pkg="lane_track" type="lane_save_csv_on_jetnano.py" output="screen"/>
+</launch>

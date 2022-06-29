@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+	<include file="$(find lane_track)/launch/lane_track_on_jetnano.launch" />
+	<node name="mainOnJetsonNano" pkg="main_fourwscar" type="main.py" output="screen"/>
+
+	<include file="$(find web_video)/launch/web_launch.launch"/>
+	<include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
+    
+</launch>
