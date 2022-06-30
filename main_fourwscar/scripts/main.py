@@ -14,21 +14,45 @@
  *  Note:  Mode( moving type ) 1: only for front wheel 2:same direction with the back wheels 3: opposite direction with the back wheels
 
     Command:    | 0                  | 1                  | 2              | 3              | 4                | 5         
-		| front_motor_speed  | back_motor_speed   | LF_Servo_angle | RF_Servo_Angle | LB_Servo_Angle   |
+		| front_motor_speed  | back_motor_speed   | LF_Servo_angle | RF_Servo_Angle | LB_Servo_Angle   | RB_Servo_Angle 
 
 '''
 import rospy
 import time
 import sys
 import numpy as np
-import controller as ctr
-import AutoMode as auto
-import ParameterProcessor as parapro
 from std_msgs.msg import Int32, Int32MultiArray, Int16MultiArray, Int16
+
+from lib import controller as ctr
+from lib import AutoMode as auto
+from lib import ParameterProcessor as parapro
 
 
 rospy.init_node('mainOnJetsonNano', anonymous=True)
 pubKey = rospy.Publisher('Key', Int16, queue_size=10)
+
+'''
+***********************************************************************
+
+	send parameter to UI
+
+***********************************************************************
+'''
+
+def sendParameter( para ):
+	
+	pub = rospy.Publisher('Parameter', Int32MultiArray, queue_size=10)
+	pubdata = Int32MultiArray(data=para)
+	pub.publish( pubdata )
+
+'''
+*************************************************************************
+
+	update parameter from UI
+
+*************************************************************************
+'''
+
 
 def updateParameter(data):
 	
@@ -37,47 +61,46 @@ def updateParameter(data):
 
 	sendParameter( para )
 
-	
 UISubscriber = rospy.Subscriber("ParameterFromUI", Int32MultiArray, updateParameter)
 
+'''
+***********************************************************************
 
-def sendParameter( para ):
-	
-	pub = rospy.Publisher('Parameter', Int32MultiArray, queue_size=10)
-	pubdata = Int32MultiArray(data=para)
-	pub.publish( pubdata )
-		
+	main
+
+***********************************************************************
+'''
 
 if __name__ == '__main__':
 
 	global para 
-	para = np.array( [ 0, 200, 200, 0, 1, 30, 30, 30, 30, 0, 0 ] )
-	ctr.setDefaultPara( para )
+	para = np.array( [ 0, 200, 200, 0, 1, 30, 30, 30, 30, 0, 0 ] )  # default parameter
+	ctr.setDefaultPara( para )					# set default parameter for controller
 
 	cmd = np.array( [ 0, 0, 0, 0 ] )
 	autohold = 0
 
 	try:	
-		sendParameter( para )
+		sendParameter( para )					# send parameter to UI
 
 		while not rospy.is_shutdown():
 
-			para = ctr.updateParaFromController( para )
-			para = parapro.checkPara( para )
-			sendParameter( para )
+			para = ctr.updateParaFromController( para )	# update new parameter from controller
+			para = parapro.checkPara( para )		# check if the value of parmeters is out of bounds
+			sendParameter( para )				# send parameter to UI
 
-			print "para=", para
-
-			if( auto.ifAuto( para[0], autohold) ):
-				para = auto.getAutoPara( para )
+			print "para=", para				
+	
+			if( auto.ifAuto( para[0], autohold) ):		# if in the auto mode
+				para = auto.getAutoPara( para )		# modify parameters with auto data
 				autohold = 1	
 
 			else:
 				autohold = 0
 
-			cmd = parapro.generateCmd( para )
+			cmd = parapro.generateCmd( para )		# generate command by translating parameter
 			print "cmd=", cmd
-			parapro.pubCmd( cmd )
+			parapro.pubCmd( cmd )				# send command to stm32
 			time.sleep(0.05)
 
 	except rospy.ROSInterruptException:

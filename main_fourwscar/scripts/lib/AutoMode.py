@@ -1,11 +1,29 @@
+#!/usr/bin/env python
+
 '''
-*  Paramater:  | 0        | 1             | 2           | 3     | 4      | 5         | 6         | 7         | 8         | 9            | 10
-		       | Ifauto   | front_motor   | back_motor  | Gear  | Mode   | Servo_LF  | Servo_RF  | Servo_LB  | Servo_RB  | Direction_FB | Direction_RL
+ *  AutoMode.py - to check and modify data regarding auto mode
+ *  Copyright (c) 2022 Realplus Tech.
+ *   
+ *  A module to check and modify data regarding auto mode
+ *
+ *  
+ *  Designed by Tim J. May/2022
+ *
+ *  Paramater:  | 0        | 1             | 2           | 3     | 4      | 5         | 6         | 7         | 8         | 9            | 10
+ *		| Ifauto   | front_motor   | back_motor  | Gear  | Mode   | Servo_LF  | Servo_RF  | Servo_LB  | Servo_RB  | Direction_FB | Direction_RL
+ *
+ *  Note:  Mode( moving type ) 1: only for front wheel 2:same direction with the back wheels 3: opposite direction with the back wheels
+ *
+ *  Command:    | 0                  | 1                  | 2              | 3              | 4                | 5         
+ *		| front_motor_speed  | back_motor_speed   | LF_Servo_angle | RF_Servo_Angle | LB_Servo_Angle   | RB_Servo_Angle 
+ *
+ *
+ *  METHOD:
+ *
+ *  		ifAuto( ifauto, autohold ) - return True or False  # determine if the vehicle is in the auto mode
+ *
+ * 		getAutoPara( para ) - return para  # implement the auto mode data such as offline to modify parameter
 
-   Command:    | 0                  | 1                  | 2              | 3              | 4                | 5         
-		       | front_motor_speed  | back_motor_speed   | LF_Servo_angle | RF_Servo_Angle | LB_Servo_Angle   | RB_Servo_Angle 
-
-	
 '''
 
 import rospy
@@ -62,6 +80,14 @@ def ifAuto( ifauto, autohold ):
 			sys.exit( "error in ifAuto" )
 
 		return ifauto
+
+'''
+***************************************************************
+
+	implement auto data to modify parameters
+
+***************************************************************
+'''
 
 def getAutoPara( para ):
 

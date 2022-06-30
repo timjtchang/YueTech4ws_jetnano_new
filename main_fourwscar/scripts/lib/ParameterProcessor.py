@@ -1,14 +1,31 @@
 #!/usr/bin/env python
-
 '''
-*  Paramater:  | 0        | 1             | 2           | 3     | 4      | 5         | 6         | 7         | 8         | 9            | 10
-		       | Ifauto   | front_motor   | back_motor  | Gear  | Mode   | Servo_LF  | Servo_RF  | Servo_LB  | Servo_RB  | Direction_FB | Direction_RL
+ *  ParameterProcesser.py - to process parameter for either chekcing if it is out of bounds or applying it to generate command
+ *  Copyright (c) 2022 Realplus Tech.
+ *   
+ *  A module to process parameter
+ *
+ *  
+ *  Designed by Tim J. May/2022
+ *
+ *  Paramater:  | 0        | 1             | 2           | 3     | 4      | 5         | 6         | 7         | 8         | 9            | 10
+ *		| Ifauto   | front_motor   | back_motor  | Gear  | Mode   | Servo_LF  | Servo_RF  | Servo_LB  | Servo_RB  | Direction_FB | Direction_RL
+ *
+ *  Note:  Mode( moving type ) 1: only for front wheel 2:same direction with the back wheels 3: opposite direction with the back wheels
+ *
+ *  Command:    | 0                  | 1                  | 2              | 3              | 4                | 5         
+ *		| front_motor_speed  | back_motor_speed   | LF_Servo_angle | RF_Servo_Angle | LB_Servo_Angle   | RB_Servo_Angle 
+ *
+ *		 90 Left (\\)  0 striaight (||)   -90 Right (//)
+ *
+ *
+ *  METHOD:
+ *
+ *  		para checkPara( para ) - to check if the servo and motor speed are out of bounds, to implement gear, and modify paramenters
+ *		
+ *
+ *		cmd generateCmd( para ) - to generate command for controling the vehicle by caculating the parameter 		
 
-   Command:    | 0                  | 1                  | 2              | 3              | 4                | 5         
-		       | front_motor_speed  | back_motor_speed   | LF_Servo_angle | RF_Servo_Angle | LB_Servo_Angle   | RB_Servo_Angle 
-
-
-		       90 Left (\\)  0 striaight (||)   -90 Right (//)
 '''
 
 import numpy as np
@@ -130,6 +147,7 @@ def generateCmd( para ):
 
 
 	return cmd
+
 def pubCmd( cmd ):
 	
 	cmdpub = rospy.Publisher('JetToStm32', Int32MultiArray, queue_size=10)
