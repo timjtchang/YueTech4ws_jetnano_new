@@ -37,36 +37,30 @@ from std_msgs.msg import Int32MultiArray
 global motor_speed_limit
 motor_speed_limit = 300
 
+global FIXED_ANGLE
+FIXED_ANGLE = 0
+global ANGLE
+ANGLE = 90
 
-def limitServo( servo_degree ):
+def setMaxSpeed( speed ):
+	
+	global motor_speed_limit
+	motor_speed_limit = speed
+	
+	return motor_speed_limit
 
-	if( servo_degree >= -90 and servo_degree <= 90):
-
-		return servo_degree
-
-	elif( servo_degree < -90):
-
-		return -90
-
-	elif( servo_degree > 90 ):
-
-		return 90
 
 def modifyGear( para ):
 
-	if( para[3] < 0 ):
-		para[3] = 0
+	if( para[3] < 1 ):
+		
+		para[3] = 1
 
-	if( para[3] == 0 ):
-
-		return para
-
-	else:
-
-		para[7] = para[5]*para[3]
-		para[8] = para[6]*para[3]
+	elif( para[3] > 3 ):
+		para[3] = 1
 
 	return para
+
 
 def limitMotor( motor_speed ):
 
@@ -94,16 +88,45 @@ def checkPara( para ):
 
 		para[i] = limitMotor( para[i] )
 
-	for i in range( 5,9 ):
-		para[i] = limitServo( para[i] )
 
 	return para
+
+def setFixedAngle( angle ):
+	
+	global FIXED_ANGLE
+	global ANGLE
+
+	FIXED_ANGLE = 1
+	ANGLE = angle
+	
+	return ANGLE
 
 
 def generateCmd( para ):
 
 	global cmd
 	cmd = np.array( [ 0, 0, 0, 0, 0, 0  ] )
+
+	global FIXED_ANGLE
+	global ANGLE
+
+	if( FIXED_ANGLE == 0 ):
+		ANGLE = 90
+
+	elif( FIXED_ANGLE == 1 ):
+		
+		if( para[6] == 0 ):
+			para[6] = 0
+		
+		elif( para[6] > 0 ):
+			para[6] = 1
+
+		elif( para[6] < 0 ):
+			para[6] = -1
+
+
+	else:
+		sys.exit( "angle error" )
 
 	if( para[0] == -1 ): #emergency stop
 		return np.array( [ -1, -1, -1, -1, -1, -1  ] )
@@ -114,8 +137,8 @@ def generateCmd( para ):
 
 	'''
 
-	cmd[0] = para[1]*para[9]
-	cmd[1] = para[2]*para[9]
+	cmd[0] = para[1]*para[5]
+	cmd[1] = para[2]*para[5]
 
 	'''
 
@@ -123,8 +146,8 @@ def generateCmd( para ):
 
 	'''
 
-	cmd[2] = para[5]*para[10]*(-1)    # angle*direction*(-1)
-	cmd[3] = para[6]*para[10]*(-1)
+	cmd[2] = para[6]*ANGLE   # angle*direction*(-1)
+	cmd[3] = para[6]*ANGLE
 
 	if( para[4] == 1 ):
 
@@ -133,13 +156,13 @@ def generateCmd( para ):
 
 	elif( para[4] == 2):
 
-		cmd[4] = para[7]*para[10]*(-1)
-		cmd[5] = para[8]*para[10]*(-1)
+		cmd[4] = para[6]*ANGLE
+		cmd[5] = para[6]*ANGLE
 
 	elif( para[4] == 3 ):
 
-		cmd[4] = para[7]*para[10]*(-1)*(-1)
-		cmd[5] = para[8]*para[10]*(-1)*(-1)
+		cmd[4] = -para[6]*ANGLE
+		cmd[5] = -para[6]*ANGLE
 
 	else:
 
@@ -151,10 +174,6 @@ def generateCmd( para ):
 def pubCmd( cmd ):
 	
 	cmdpub = rospy.Publisher('JetToStm32', Int32MultiArray, queue_size=10)
-	
-	if( cmd[0] == -1 and cmd[1] == -1 ):
-		cmd = np.array( [ 0, 0, 0, 0, 0, 0 ] )
-		sys.exit( " Stop !! " )
 
 	pubdata = Int32MultiArray(data=cmd)
 	cmdpub.publish( pubdata )
@@ -163,7 +182,7 @@ def pubCmd( cmd ):
 
 if __name__ == '__main__':
 
-	para = np.array( [ 0, 100, 100, 0, 1, 90, 90, 90, 90, -1, 1] ) 
+	para = np.array( [ 0.0, 100.0, 100.0, 0.0, 1.0, 90.0, 1.0, 1.0] ) 
 	cmd = np.array( [ 0, 0, 0, 0, 0, 0 ] )
 	
 	while True:

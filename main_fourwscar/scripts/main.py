@@ -21,7 +21,7 @@ import rospy
 import time
 import sys
 import numpy as np
-from std_msgs.msg import Int32, Int32MultiArray, Int16MultiArray, Int16
+from std_msgs.msg import Int32, Int32MultiArray, Int16MultiArray, Int16, Float32MultiArray
 
 from lib import controller as ctr
 from lib import AutoMode as auto
@@ -41,8 +41,8 @@ pubKey = rospy.Publisher('Key', Int16, queue_size=10)
 
 def sendParameter( para ):
 	
-	pub = rospy.Publisher('Parameter', Int32MultiArray, queue_size=10)
-	pubdata = Int32MultiArray(data=para)
+	pub = rospy.Publisher('Parameter', Float32MultiArray, queue_size=10)
+	pubdata = Float32MultiArray(data=para)
 	pub.publish( pubdata )
 
 '''
@@ -61,7 +61,7 @@ def updateParameter(data):
 
 	sendParameter( para )
 
-UISubscriber = rospy.Subscriber("ParameterFromUI", Int32MultiArray, updateParameter)
+UISubscriber = rospy.Subscriber("ParameterFromUI", Float32MultiArray, updateParameter)
 
 '''
 ***********************************************************************
@@ -74,7 +74,7 @@ UISubscriber = rospy.Subscriber("ParameterFromUI", Int32MultiArray, updateParame
 if __name__ == '__main__':
 
 	global para 
-	para = np.array( [ 0, 50, 50, 0, 1, 30, 30, 30, 30, 0, 0 ] )  # default parameter
+	para = np.array( [ 0.0, 90.0, 90.0, 0.0, 1.0, 0.0, 0.0 ] )  	# default parameter
 	ctr.setDefaultPara( para )					# set default parameter for controller
 
 	cmd = np.array( [ 0, 0, 0, 0 ] )

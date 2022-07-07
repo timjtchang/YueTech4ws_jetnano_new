@@ -50,9 +50,10 @@ button = {}
 hat = {}
 
 # Labels for DS4 controller axes
-AXIS_Y = 1
-AXIS_X = 0
-
+AXIS_LY = 1
+AXIS_LX = 0
+AXIS_RY = 4
+AXIS_RX = 3
 
 # Labels for DS4 controller buttons
 # Note that there are 14 buttons (0 to 13 for pygame, 1 to 14 for Windows setup)
@@ -83,6 +84,7 @@ for i in range(controller.get_numbuttons()):
 for i in range(controller.get_numhats()): 
  
 	hat[i] = (0, 0)
+
 
 def setDefaultPara( tmp_para ):
 
@@ -158,45 +160,37 @@ def updateParaFromController( para ):
 
 	# update Direction Forward or Backward
 
-	if(   axis[ AXIS_Y ] == 0 ):
-		
-		para[9] = 0
+	if( axis[AXIS_LY]  == 0 ):
 
-	elif( axis[ AXIS_Y ]>0 ):
+		para[5] = 0
 
-		para[9] = -1
+	else:
+	
+		para[5] = axis[AXIS_LY] * (-1)
 
-	elif( axis[ AXIS_Y ] < 0 ):
-
-		para[9] = 1
 
 	# update Direction Right or Left 
+	
+	if(   axis[ AXIS_RX ] == 0 ):
 
-	if(   axis[ AXIS_X ] == 0 ):
+		para[6] = 0
+	else:
+	
+		para[6] = axis[AXIS_RX]
 
-		para[10] = 0
-
-	elif( axis[ AXIS_X ] > 0 ):
-
-		para[10] = 1
-
-	elif( axis[ AXIS_X ] < 0 ):
-
-		para[10] = -1
-
-    
 	# quit python when Button Minus pushed
     	
 	if( button[BUTTON_MIN] ):
 		
-		para = np.array( [ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ] )
+		para = np.array( [ -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ] )
+	
 
 	return para
 
 
 if __name__ == '__main__':
 
-	para = np.array( [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ] )
+	para = np.array( [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ] )
 	
 	while True:
 		
@@ -209,8 +203,11 @@ if __name__ == '__main__':
 		print "Mode=", para[4], "\n"
 		print "Ifauto=", para[0], "\n"
 		print "Gear=", para[3], "\n"
-		print "Direction_FB=", para[9], "\n"
-		print "Direction_RL=", para[10], "\n"
+		print "Direction_FB=", para[5], "\n"
+		print "Direction_RL=", para[6], "\n"
+
+
+		
 	
 
 
