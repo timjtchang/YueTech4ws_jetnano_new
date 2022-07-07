@@ -74,7 +74,7 @@ UISubscriber = rospy.Subscriber("ParameterFromUI", Int32MultiArray, updateParame
 if __name__ == '__main__':
 
 	global para 
-	para = np.array( [ 0, 200, 200, 0, 1, 30, 30, 30, 30, 0, 0 ] )  # default parameter
+	para = np.array( [ 0, 50, 50, 0, 1, 30, 30, 30, 30, 0, 0 ] )  # default parameter
 	ctr.setDefaultPara( para )					# set default parameter for controller
 
 	cmd = np.array( [ 0, 0, 0, 0 ] )
