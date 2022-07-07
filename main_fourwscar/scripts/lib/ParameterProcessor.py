@@ -8,8 +8,8 @@
  *  
  *  Designed by Tim J. May/2022
  *
- *  Paramater:  | 0        | 1             | 2           | 3     | 4      | 5         | 6         | 7         | 8         | 9            | 10
- *		| Ifauto   | front_motor   | back_motor  | Gear  | Mode   | Servo_LF  | Servo_RF  | Servo_LB  | Servo_RB  | Direction_FB | Direction_RL
+ *  Paramater:  | 0        | 1                 | 2               | 3     | 4      | 9            | 10
+ *		| Ifauto   | front_motor_MAX   | back_motor_MAX  | Gear  | Mode   | Direction_FB | Direction_RL
  *
  *  Note:  Mode( moving type ) 1: only for front wheel 2:same direction with the back wheels 3: opposite direction with the back wheels
  *
@@ -32,6 +32,7 @@ import numpy as np
 import time
 import sys
 import rospy
+import json
 from std_msgs.msg import Int32MultiArray
 
 global motor_speed_limit
@@ -41,6 +42,32 @@ global FIXED_ANGLE
 FIXED_ANGLE = 0
 global ANGLE
 ANGLE = 90
+
+def readPara(add):
+	
+	global RECORD_ADDRESS
+
+	para = np.array( [ 0.0, 90.0, 90.0, 0.0, 1.0, 0.0, 0.0 ] )  	# default parameter
+	
+	with open(add) as f:
+		record = json.load(f)
+
+	for key in record:
+		index = int(key)
+		index = index - int('0')
+		para[index] = record[key]
+
+	print "para in read =", para
+
+	return para
+	
+def writePara( para, add ):
+
+	record = { '0': para[0], '1': para[1], '2': para[2], '3': para[3],
+		  '4': para[4], '5': para[5], '6': para[6] }
+
+	with open(add, 'w') as convert_file:
+		convert_file.write(json.dumps(record))
 
 def setMaxSpeed( speed ):
 	

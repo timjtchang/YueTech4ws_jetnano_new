@@ -8,8 +8,8 @@
  *  
  *  Designed by Tim J. May/2022
  *
- *  Paramater:  | 0        | 1             | 2           | 3     | 4      | 5         | 6         | 7         | 8         | 9            | 10
- *		| Ifauto   | front_motor   | back_motor  | Gear  | Mode   | Servo_LF  | Servo_RF  | Servo_LB  | Servo_RB  | Direction_FB | Direction_RL
+ *  Paramater:  | 0        | 1                 | 2               | 3     | 4      | 9            | 10
+ *		| Ifauto   | front_motor_MAX   | back_motor_MAX  | Gear  | Mode   | Direction_FB | Direction_RL
 
  *  Note:  Mode( moving type ) 1: only for front wheel 2:same direction with the back wheels 3: opposite direction with the back wheels
 
@@ -26,6 +26,9 @@ from std_msgs.msg import Int32, Int32MultiArray, Int16MultiArray, Int16, Float32
 from lib import controller as ctr
 from lib import AutoMode as auto
 from lib import ParameterProcessor as parapro
+
+global RECORD_ADDRESS
+RECORD_ADDRESS = '/home/jetnano/catkin_ws/src/main_fourwscar/scripts/record.txt'
 
 
 rospy.init_node('mainOnJetsonNano', anonymous=True)
@@ -75,6 +78,9 @@ if __name__ == '__main__':
 
 	global para 
 	para = np.array( [ 0.0, 90.0, 90.0, 0.0, 1.0, 0.0, 0.0 ] )  	# default parameter
+
+	para = parapro.readPara( RECORD_ADDRESS )			# read record 
+
 	ctr.setDefaultPara( para )					# set default parameter for controller
 
 	cmd = np.array( [ 0, 0, 0, 0 ] )
@@ -101,6 +107,7 @@ if __name__ == '__main__':
 			cmd = parapro.generateCmd( para )		# generate command by translating parameter
 			print "cmd=", cmd
 			parapro.pubCmd( cmd )				# send command to stm32
+			parapro.writePara( para, RECORD_ADDRESS  )
 			time.sleep(0.05)
 
 	except rospy.ROSInterruptException:
