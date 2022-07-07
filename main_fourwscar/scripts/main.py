@@ -65,6 +65,7 @@ def updateParameter(data):
 	sendParameter( para )
 
 UISubscriber = rospy.Subscriber("ParameterFromUI", Float32MultiArray, updateParameter)
+SonarSubscriber = rospy.Subscriber("Sonar", Int16MultiArray, parapro.setSonar)
 
 '''
 ***********************************************************************
@@ -79,9 +80,11 @@ if __name__ == '__main__':
 	global para 
 	para = np.array( [ 0.0, 90.0, 90.0, 0.0, 1.0, 0.0, 0.0 ] )  	# default parameter
 
-	para = parapro.readPara( RECORD_ADDRESS )			# read record 
+	#para = parapro.readPara( RECORD_ADDRESS )			# read record 
 
 	ctr.setDefaultPara( para )					# set default parameter for controller
+	
+	parapro.setSonarLimit( 5 ) 					# set sonar limit value
 
 	cmd = np.array( [ 0, 0, 0, 0 ] )
 	autohold = 0
@@ -90,6 +93,8 @@ if __name__ == '__main__':
 		sendParameter( para )					# send parameter to UI
 
 		while not rospy.is_shutdown():
+			
+			#para = parapro.readPara( RECORD_ADDRESS )			# read record 
 
 			para = ctr.updateParaFromController( para )	# update new parameter from controller
 			para = parapro.checkPara( para )		# check if the value of parmeters is out of bounds
@@ -103,8 +108,11 @@ if __name__ == '__main__':
 
 			else:
 				autohold = 0
+			
+			sonar = parapro.getSonar()			# update sonar value
+			print "sonar value=", sonar
 
-			cmd = parapro.generateCmd( para )		# generate command by translating parameter
+			cmd = parapro.generateCmd( para, sonar )	# generate command by translating parameter
 			print "cmd=", cmd
 			parapro.pubCmd( cmd )				# send command to stm32
 			parapro.writePara( para, RECORD_ADDRESS  )

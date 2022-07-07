@@ -43,14 +43,41 @@ FIXED_ANGLE = 0
 global ANGLE
 ANGLE = 90
 
-def readPara(add):
+global SonarLimit
+SonarLimit = 0
+
+global g_sonar
+g_sonar = np.array( [ 0, 0, 0, 0, 0 ] ) 
+
+def setSonar(data):
+
+	global g_sonar
+	g_sonar = np.array( data.data )
+
+def setSonarLimit( limit ):
 	
-	global RECORD_ADDRESS
+	global SonarLimit
+
+	SonarLimit = limit
+
+	return SonarLimit
+
+def getSonar():
+	
+	global g_sonar
+	global SonarLimit
+
+	g_sonar[4] = SonarLimit
+
+	return g_sonar
+	
+def readPara(add):
 
 	para = np.array( [ 0.0, 90.0, 90.0, 0.0, 1.0, 0.0, 0.0 ] )  	# default parameter
 	
 	with open(add) as f:
 		record = json.load(f)
+		f.close()
 
 	for key in record:
 		index = int(key)
@@ -58,6 +85,7 @@ def readPara(add):
 		para[index] = record[key]
 
 	print "para in read =", para
+
 
 	return para
 	
@@ -68,6 +96,9 @@ def writePara( para, add ):
 
 	with open(add, 'w') as convert_file:
 		convert_file.write(json.dumps(record))
+		convert_file.close()
+
+	
 
 def setMaxSpeed( speed ):
 	
@@ -128,8 +159,24 @@ def setFixedAngle( angle ):
 	
 	return ANGLE
 
+def sensorDistance( cmd, sonar ):
+	
+	reflectTime = 0.1
+	limit = sonar[4] + (2*3.14*abs(cmd[0])*12.3/30)*reflectTime
 
-def generateCmd( para ):
+	print "limit=", limit
+	
+	if( sonar[0] <= limit or sonar[1] <= limit ):
+		if( cmd[0] > 0 ): cmd[0] = 0
+		if( cmd[1] > 0 ): cmd[1] = 0
+	
+	if( sonar[2] <= limit or sonar[3] <= limit ):
+		if( cmd[0] < 0 ): cmd[0] = 0
+		if( cmd[1] < 0 ): cmd[1] = 0
+
+	return cmd
+
+def generateCmd( para, sonar ):
 
 	global cmd
 	cmd = np.array( [ 0, 0, 0, 0, 0, 0  ] )
@@ -195,8 +242,11 @@ def generateCmd( para ):
 
 		sys.exit( "mode error" )
 
+	cmd = sensorDistance( cmd,sonar )
+
 
 	return cmd
+
 
 def pubCmd( cmd ):
 	
