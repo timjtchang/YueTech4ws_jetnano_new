@@ -44,8 +44,8 @@ FIXED_ANGLE = 0
 global ANGLE
 ANGLE = 90
 
-global SonarLimit
-SonarLimit = 0
+global g_SonarLimit
+g_SonarLimit = 5
 
 global g_sonar
 g_sonar = np.array( [ 0, 0, 0, 0, 0 ] ) 
@@ -56,6 +56,9 @@ g_gear_coefficient = 1.0
 global g_gear_ratio
 g_gear_ratio = 1.0
 
+global g_reflectTime
+g_reflectTime = 0.6
+
 def setSonar(data):
 
 	global g_sonar
@@ -63,18 +66,18 @@ def setSonar(data):
 
 def setSonarLimit( limit ):
 	
-	global SonarLimit
+	global g_SonarLimit
 
-	SonarLimit = limit
+	g_SonarLimit = limit
 
-	return SonarLimit
+	return g_SonarLimit
 
 def getSonar():
 	
 	global g_sonar
-	global SonarLimit
+	global g_SonarLimit
 
-	g_sonar[4] = SonarLimit
+	g_sonar[4] = g_SonarLimit
 
 	return g_sonar
 	
@@ -137,6 +140,11 @@ def checkPara( para ):
 
 		para[i] = limitMotor( para[i] )
 
+	if( para[5]>1 or para[5]<0 ): para[5] = 0
+	if( para[6]>1 or para[6]<0 ): para[6] = 0
+	if( para[0]>1 or para[0]<-1 ): para[0] = 0
+	if( para[4]>3 or para[4]<1 ): para[4] = 1
+
 
 	return para
 
@@ -150,18 +158,32 @@ def setFixedAngle( angle ):
 	
 	return ANGLE
 
+def setReflectTime( tf ):
+
+	global g_reflectTime
+	g_reflectTime = tf
+
 def sensorDistance( cmd, sonar ):
 	
-	reflectTime = 0.1
-	limit = sonar[4] + (2*3.14*abs(cmd[0])*12.3/30)*reflectTime
+	global g_reflectTime
+	reflectTime = g_reflectTime
 
-	print "limit=", limit
+	global g_SonarLimit
+	SonarLimit = g_SonarLimit
+
+
+	print "sonanr limit=", SonarLimit, "reflect=", reflectTime
+
+	speed = abs(cmd[0]);
+
+	limitDistance = (2*reflectTime-0.5)*41*np.pi*speed/200+SonarLimit
+	print "limit=", limitDistance
 	
-	if( sonar[0] <= limit or sonar[1] <= limit ):
+	if( sonar[0] <= limitDistance or sonar[1] <= limitDistance ):
 		if( cmd[0] > 0 ): cmd[0] = 0
 		if( cmd[1] > 0 ): cmd[1] = 0
 	
-	if( sonar[2] <= limit or sonar[3] <= limit ):
+	if( sonar[2] <= limitDistance or sonar[3] <= limitDistance ):
 		if( cmd[0] < 0 ): cmd[0] = 0
 		if( cmd[1] < 0 ): cmd[1] = 0
 

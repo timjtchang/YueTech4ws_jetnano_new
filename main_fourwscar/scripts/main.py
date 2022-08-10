@@ -83,18 +83,19 @@ if __name__ == '__main__':
 	global para 
 	para = np.array( [ 0.0, 90.0, 90.0, 0.0, 1.0, 0.0, 0.0 ] )  	# default parameter
 
-	#para = parapro.readPara( RECORD_ADDRESS )			# read record 
+	para = parapro.readPara( RECORD_ADDRESS )			# read record 
 
 	ctr.setDefaultPara( para )					# set default parameter for controller
 	
 	parapro.setSonarLimit( 5 ) 					# set sonar limit value
+	parapro.setReflectTime( 0.6 )					# set sonar relect Time
 
-	parapro.setGearCoefficient( 0.5 )					# set coeffcient for getting servo angle by calculating gear
+	parapro.setGearCoefficient( 0.5 )				# set coeffcient for getting servo angle by calculating gear
 
 	cmd = np.array( [ 0, 0, 0, 0 ] )
 	autohold = 0.0
 
-	auto.watchCamera(1)
+	#auto.watchCamera(1)
 
 	try:	
 		sendParameter( para )					# send parameter to UI
@@ -103,13 +104,7 @@ if __name__ == '__main__':
 
 			para = ctr.updateParaFromController( para )	# update new parameter from controller
 			para = parapro.checkPara( para )		# check if the value of parmeters is out of bounds
-			sendParameter( para )				# send parameter to UI
-
-			print "para=", para		
-			
-			a=parapro.getGearRatio()
-			print "coefficient=", a
-			a=100		
+			sendParameter( para )				# send parameter to UI	
 	
 			if( auto.ifAuto( para[0], autohold) ):		# if in the auto mode
 				para = auto.getAutoPara( para )		# modify parameters with auto data
@@ -120,6 +115,8 @@ if __name__ == '__main__':
 			
 			sonar = parapro.getSonar()			# update sonar value
 			print "sonar value=", sonar
+
+			print "para=", para	
 
 			cmd = parapro.generateCmd( para, sonar )	# generate command by translating parameter
 			print "cmd=", cmd

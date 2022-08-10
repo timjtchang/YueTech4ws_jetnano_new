@@ -106,8 +106,6 @@ def ifAuto( ifauto, autohold ):
 	
 	renewPublisher.publish(0)
 
-	print "ifauto=", ifauto, "autohold=", autohold
-
 	if( ifauto ==  autohold and ifauto == 1.0 ):
 		
 		pubKey.publish( 1 )
@@ -124,14 +122,12 @@ def ifAuto( ifauto, autohold ):
 
 			pubKey.publish( 1 )
 			AutoSubscriber = rospy.Subscriber("lane_status", Int16MultiArray, getDataForAutoMode ) 
-			#ImgSubscriber = rospy.Subscriber("lane_image", Image, showImg ) 
 			print "subscribe"
 
 		elif( ifauto == 0.0  and autohold == 1.0 ):
 
 			pubKey.publish( 0 )
 			AutoSubscriber.unregister()
-			#ImgSubscriber.unregister()
 
 			print "unregister"
 		elif( ifauto == -1 ):
@@ -160,11 +156,7 @@ def getAutoPara( para ):
 
 	lane_width = 224.0
 	
-
-	if( auto_data[1]): 
-		para[6] = float(auto_data[0])/ (lane_width/2)
-
-	print "offset=", auto_data[0], "RF=", para
+	para[6] = float(auto_data[0])/ (lane_width/2)
 
 	return para
 
