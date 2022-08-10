@@ -33,6 +33,7 @@ import time
 import sys
 import rospy
 import json
+import copy
 from std_msgs.msg import Int32MultiArray
 
 global motor_speed_limit
@@ -48,6 +49,12 @@ SonarLimit = 0
 
 global g_sonar
 g_sonar = np.array( [ 0, 0, 0, 0, 0 ] ) 
+
+global g_gear_coefficient
+g_gear_coefficient = 1.0
+
+global g_gear_ratio
+g_gear_ratio = 1.0
 
 def setSonar(data):
 
@@ -107,19 +114,6 @@ def setMaxSpeed( speed ):
 	
 	return motor_speed_limit
 
-
-def modifyGear( para ):
-
-	if( para[3] < 1 ):
-		
-		para[3] = 1
-
-	elif( para[3] > 3 ):
-		para[3] = 1
-
-	return para
-
-
 def limitMotor( motor_speed ):
 
 	global motor_speed_limit
@@ -138,9 +132,6 @@ def limitMotor( motor_speed ):
 
 
 def checkPara( para ):
-
-
-	para = modifyGear( para )
 
 	for i in range( 1, 3 ):
 
@@ -176,6 +167,17 @@ def sensorDistance( cmd, sonar ):
 
 	return cmd
 
+def setGearCoefficient( coefficient ):
+
+	global g_gear_coefficient
+	g_gear_coefficient = coefficient
+	return
+
+def getGearRatio():  #return value of gear ratio
+	
+	global g_gear_ratio
+	return g_gear_ratio
+
 def generateCmd( para, sonar ):
 
 	global cmd
@@ -183,6 +185,9 @@ def generateCmd( para, sonar ):
 
 	global FIXED_ANGLE
 	global ANGLE
+
+	global g_gear_coefficient
+	global g_gear_ratio
 
 	if( FIXED_ANGLE == 0 ):
 		ANGLE = 90
@@ -241,6 +246,25 @@ def generateCmd( para, sonar ):
 	else:
 
 		sys.exit( "mode error" )
+
+	'''
+	apply gear on servo
+	'''
+	
+	coeffi = para[3]*g_gear_coefficient
+
+	if( coeffi == 0 ): coeffi = 1.0
+	elif( coeffi < 0 ): coeffi = 1/abs(coeffi)
+	
+	g_gear_ratio = copy.copy(coeffi)
+	
+	cmd[4] *= coeffi
+	if( cmd[4] > 90 ): cmd[4] = 90
+	elif( cmd[4] <-90): cmd[4] = -90
+
+	cmd[5] *= coeffi
+	if( cmd[5] >90 ): cmd[5] = 90
+	elif( cmd[5]<-90 ): cmd[5] = -90
 
 	cmd = sensorDistance( cmd,sonar )
 

@@ -8,7 +8,7 @@
  *  
  *  Designed by Tim J. May/2022
  *
- *  Paramater:  | 0        | 1                 | 2               | 3     | 4      | 9            | 10
+ *  Paramater:  | 0        | 1                 | 2               | 3     | 4      | 5            | 6
  *		| Ifauto   | front_motor_MAX   | back_motor_MAX  | Gear  | Mode   | Direction_FB | Direction_RL
 
  *  Note:  Mode( moving type ) 1: only for front wheel 2:same direction with the back wheels 3: opposite direction with the back wheels
@@ -21,6 +21,8 @@ import rospy
 import time
 import sys
 import numpy as np
+import os
+
 from std_msgs.msg import Int32, Int32MultiArray, Int16MultiArray, Int16, Float32MultiArray
 
 from lib import controller as ctr
@@ -28,7 +30,8 @@ from lib import AutoMode as auto
 from lib import ParameterProcessor as parapro
 
 global RECORD_ADDRESS
-RECORD_ADDRESS = '/home/jetnano/catkin_ws/src/main_fourwscar/scripts/record.txt'
+HOME=os.getenv('HOME')
+RECORD_ADDRESS = HOME+'/catkin_ws/src/main_fourwscar/scripts/record.txt'
 
 
 rospy.init_node('mainOnJetsonNano', anonymous=True)
@@ -86,28 +89,34 @@ if __name__ == '__main__':
 	
 	parapro.setSonarLimit( 5 ) 					# set sonar limit value
 
+	parapro.setGearCoefficient( 0.5 )					# set coeffcient for getting servo angle by calculating gear
+
 	cmd = np.array( [ 0, 0, 0, 0 ] )
-	autohold = 0
+	autohold = 0.0
+
+	auto.watchCamera(1)
 
 	try:	
 		sendParameter( para )					# send parameter to UI
 
 		while not rospy.is_shutdown():
-			
-			#para = parapro.readPara( RECORD_ADDRESS )			# read record 
 
 			para = ctr.updateParaFromController( para )	# update new parameter from controller
 			para = parapro.checkPara( para )		# check if the value of parmeters is out of bounds
 			sendParameter( para )				# send parameter to UI
 
-			print "para=", para				
+			print "para=", para		
+			
+			a=parapro.getGearRatio()
+			print "coefficient=", a
+			a=100		
 	
 			if( auto.ifAuto( para[0], autohold) ):		# if in the auto mode
 				para = auto.getAutoPara( para )		# modify parameters with auto data
-				autohold = 1	
+				autohold = 1.0	
 
 			else:
-				autohold = 0
+				autohold = 0.0
 			
 			sonar = parapro.getSonar()			# update sonar value
 			print "sonar value=", sonar
