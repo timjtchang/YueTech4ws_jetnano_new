@@ -40,35 +40,11 @@ global auto_data
 global isCamera
 isCamera = 0
 
-global HSVLower
-global HSVUpper
-HSVLower=np.array([0,0,0])
-HSVUpper=np.array([255,255,255])
-
 auto_data = np.array( [0, 0] )
 pubKey = rospy.Publisher('Key', Int16, queue_size=10)
 
-global HSVPublisher
-global renewPublisher
-HSVPublisher = rospy.Publisher('white_hsv_params',Int16MultiArray, queue_size=10)
-renewPublisher = rospy.Publisher('white_hsv_renew',Int16,queue_size=10) 
 
 global ImgSubscriber
-
-def setHSV():
-	
-	global HSVLower
-	global HSVUpper
-
-	global renewPublisher
-	global HSVPublisher
-
-	whitepubData=[int(HSVLower[0]),int(HSVLower[1]),int(HSVLower[2]),int(HSVUpper[0]),int(HSVUpper[1]),int(HSVUpper[2])]
-	whitepubArr=Int16MultiArray(data=whitepubData)
-
-        HSVPublisher.publish(whitepubArr)
-	renewPublisher.publish(1)
-	
 
 
 def watchCamera( tmp ):
@@ -103,8 +79,6 @@ def ifAuto( ifauto, autohold ):
 
 	global AutoSubscriber
 	global renewPublisher
-	
-	renewPublisher.publish(0)
 
 	if( ifauto ==  autohold and ifauto == 1.0 ):
 		
