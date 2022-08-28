@@ -10,5 +10,7 @@
 
 	<include file="$(find web_video)/launch/web_launch.launch"/>
 	<include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
+
+	<node name="lane_save_hsv" pkg="lane_track" type="lane_save_csv_on_jetnano.py" output="screen"/>
     
 </launch>

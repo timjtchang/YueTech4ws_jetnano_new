@@ -8,7 +8,7 @@
  *  
  *  Designed by Tim J. May/2022
  *
- *  Paramater:  | 0        | 1                 | 2               | 3     | 4      | 9            | 10
+ *  Paramater:  | 0        | 1                 | 2               | 3     | 4      | 5            | 6
  *		| Ifauto   | front_motor_MAX   | back_motor_MAX  | Gear  | Mode   | Direction_FB | Direction_RL
  *
  *  Note:  Mode( moving type ) 1: only for front wheel 2:same direction with the back wheels 3: opposite direction with the back wheels
