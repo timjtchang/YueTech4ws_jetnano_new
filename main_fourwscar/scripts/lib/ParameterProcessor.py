@@ -83,23 +83,40 @@ def getSonar():
 	
 def readPara(add):
 
+        global g_last_speed
+        global g_last_auto
+        
 	para = np.array( [ 0.0, 90.0, 90.0, 0.0, 1.0, 0.0, 0.0 ] )  	# default parameter
-	
-	with open(add) as f:
-		record = json.load(f)
-		f.close()
 
-	for key in record:
-		index = int(key)
-		index = index - int('0')
-		para[index] = record[key]
+	try:
+                f=open(add, 'r')
+                record = json.load(f)
+                f.close()
 
-	print "para in read =", para
+                for key in record:
+                        index = int(key)
+                        index = index - int('0')
+                        para[index] = record[key]
 
+        except:
+                f.close()
+
+        g_last_speed = para[1]
+        g_last_auto = para[0]
+
+        print "para in read=", para
 
 	return para
 	
 def writePara( para, add ):
+
+        global g_last_speed
+        global g_last_auto
+
+        if( para[0] == g_last_auto and para[1] == g_last_speed ): return
+        else:
+                g_last_auto = para[0]
+                g_last_speed = para[1]
 
 	record = { '0': para[0], '1': para[1], '2': para[2], '3': para[3],
 		  '4': para[4], '5': para[5], '6': para[6] }
@@ -140,8 +157,8 @@ def checkPara( para ):
 
 		para[i] = limitMotor( para[i] )
 
-	if( para[5]>1 or para[5]<0 ): para[5] = 0
-	if( para[6]>1 or para[6]<0 ): para[6] = 0
+	if( para[5]>1 or para[5]<-1 ): para[5] = 0
+	if( para[6]>1 or para[6]<-1 ): para[6] = 0
 	if( para[0]>1 or para[0]<-1 ): para[0] = 0
 	if( para[4]>3 or para[4]<1 ): para[4] = 1
 
@@ -272,13 +289,11 @@ def generateCmd( para, sonar ):
 	'''
 	apply gear on servo
 	'''
-	
-	coeffi = para[3]*g_gear_coefficient
 
-	if( coeffi == 0 ): coeffi = 1.0
-	elif( coeffi < 0 ): coeffi = 1/abs(coeffi)
+	coeffi = (abs(para[3])-1)*g_gear_coefficient+1
 	
-	g_gear_ratio = copy.copy(coeffi)
+	if( para[3] == 0 ): coeffi = 1.0
+	elif( para[3] < 0 ): coeffi = 1/coeffi
 	
 	cmd[4] *= coeffi
 	if( cmd[4] > 90 ): cmd[4] = 90
@@ -305,12 +320,22 @@ def pubCmd( cmd ):
 
 if __name__ == '__main__':
 
-	para = np.array( [ 0.0, 100.0, 100.0, 0.0, 1.0, 90.0, 1.0, 1.0] ) 
+	para = np.array( [ 0.0, 100.0, 100.0, 0.0, 2.0, 0.5, 0.5] ) 
 	cmd = np.array( [ 0, 0, 0, 0, 0, 0 ] )
+	sonar = np.array( [ 100, 100, 100, 100, 5 ] )
 	
-	while True:
-		
+	print "g_gear_coefficient=", g_gear_coefficient
 
+	for i in range( -5, 5 ):
+
+                para[3] = i
+                cmd = generate( para, sonar )
+                print "cmd=", cmd
+                
+	
+	#while True:
+		
+                '''
 		for i in range(-1, 2 ):
 
 			para[9] = i
@@ -325,6 +350,7 @@ if __name__ == '__main__':
 				print "cmd=", cmd
 
 				time.sleep(3)
+		'''
 
 		'''
 		for i in range( -50, 400, 10 ):
